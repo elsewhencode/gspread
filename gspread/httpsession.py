@@ -39,7 +39,7 @@ class HTTPSession(object):
     """
     def __init__(self, headers=None):
         self.headers = headers or {}
-        self.connections = {}
+        # self.connections = {}
 
     def request(self, method, url, data=None, headers=None):
         if data and not isinstance(data, basestring):
@@ -53,11 +53,13 @@ class HTTPSession(object):
             headers['Content-Type'] = 'application/x-www-form-urlencoded'
         # If connection for this scheme+location is not established, establish it.
         uri = urlparse(url)
-        if not self.connections.get(uri.scheme+uri.netloc):
-            if uri.scheme == 'https':
-                self.connections[uri.scheme+uri.netloc] = client.HTTPSConnection(uri.netloc)
-            else:
-                self.connections[uri.scheme+uri.netloc] = client.HTTPConnection(uri.netloc)
+        # if not self.connections.get(uri.scheme+uri.netloc):
+        if uri.scheme == 'https':
+            # self.connections[uri.scheme+uri.netloc] = client.HTTPSConnection(uri.netloc)
+            con = client.HTTPSConnection(uri.netloc)
+        else:
+            # self.connections[uri.scheme+uri.netloc] = client.HTTPConnection(uri.netloc)
+            con = client.HTTPConnection(uri.netloc)
 
         request_headers = self.headers.copy()
 
@@ -68,8 +70,9 @@ class HTTPSession(object):
                 else:
                     request_headers[k] = v
 
-        self.connections[uri.scheme+uri.netloc].request(method, url, data, headers=request_headers)
-        response = self.connections[uri.scheme+uri.netloc].getresponse()
+        # self.connections[uri.scheme+uri.netloc].request(method, url, data, headers=request_headers)
+        con.request(method, url, data, headers=request_headers)
+        response = con.getresponse()
 
         if response.status > 399:
             raise HTTPError(response)
